@@ -7,8 +7,8 @@
                                              android:padding="16dp">
     <View
             android:id="@+id/v_url_accessibility"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             tools:background="@color/colorRed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -16,12 +16,12 @@
     <ProgressBar
             android:id="@+id/pb_url_checker"
             android:layout_width="0dp"
-                 android:layout_height="0dp"
-                 android:indeterminate="true"
-                 app:layout_constraintTop_toTopOf="@+id/v_url_accessibility"
-                 app:layout_constraintBottom_toBottomOf="@+id/v_url_accessibility"
-                 app:layout_constraintStart_toStartOf="@+id/v_url_accessibility"
-                 app:layout_constraintEnd_toEndOf="@id/v_url_accessibility"/>
+            android:layout_height="0dp"
+            android:indeterminate="true"
+            app:layout_constraintTop_toTopOf="@+id/v_url_accessibility"
+            app:layout_constraintBottom_toBottomOf="@+id/v_url_accessibility"
+            app:layout_constraintStart_toStartOf="@+id/v_url_accessibility"
+            app:layout_constraintEnd_toEndOf="@id/v_url_accessibility"/>
 
     <TextView
             android:id="@+id/tv_url_path"
@@ -33,9 +33,20 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginStart="16dp"
+            app:layout_constraintEnd_toStartOf="@id/iv_delete"
             app:layout_constraintTop_toTopOf="@+id/v_url_accessibility"
             app:layout_constraintBottom_toBottomOf="@+id/v_url_accessibility"
             app:layout_constraintStart_toEndOf="@+id/v_url_accessibility"/>
+
+    <ImageView
+            android:id="@+id/iv_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_delete"
+            android:tint="@android:color/holo_red_dark"
+            app:layout_constraintTop_toTopOf="@+id/v_url_accessibility"
+            app:layout_constraintBottom_toBottomOf="@+id/v_url_accessibility"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
 
 </android.support.constraint.ConstraintLayout>
