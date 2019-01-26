@@ -8,6 +8,68 @@
         android:padding="16dp"
         tools:context=".ui.main_activity.MainActivity">
 
+    <LinearLayout
+            android:id="@+id/ll_tools_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_sort_name_ascending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_sort_alphabetically"
+                android:tint="@android:color/holo_orange_dark"/>
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_sort_name_descending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:rotation="180"
+                android:src="@android:drawable/ic_menu_sort_alphabetically"
+                android:tint="@android:color/holo_purple"/>
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_sort_accessibility"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/presence_online"/>
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_sort_response_time_ascending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:tint="@android:color/holo_blue_bright"/>
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_sort_response_time_descending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:tint="@android:color/holo_red_light"/>
+
+        <ImageView
+                android:layout_weight="1"
+                android:id="@+id/tv_refresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/stat_notify_sync"
+                android:tint="@android:color/holo_green_dark"
+        />
+
+    </LinearLayout>
+
+
     <android.support.v7.widget.AppCompatEditText
             android:id="@+id/edt_url_adding"
             android:layout_width="0dp"
@@ -15,7 +77,7 @@
             android:hint="@string/enter_url"
             android:imeOptions="actionDone"
             android:inputType="textUri"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ll_tools_wrapper"
             app:layout_constraintEnd_toStartOf="@id/btn_check"
             app:layout_constraintStart_toStartOf="parent"/>
 

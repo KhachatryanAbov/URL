@@ -2,5 +2,11 @@
     <string name="app_name">MyUrlTester</string>
     <string name="enter_url">Enter URL</string>
     <string name="check">Check</string>
+    <string name="refresh">Refresh</string>
     <string name="invalid_URL">inserted URL is invalid</string>
+    <string name="name_ascending">name ascending</string>
+    <string name="name_descending">name descending</string>
+    <string name="accessibility">accessibility</string>
+    <string name="response_time_ascending">response time ascending</string>
+    <string name="response_time_descending">response time descending</string>
 </resources>

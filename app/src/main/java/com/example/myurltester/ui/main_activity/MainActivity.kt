@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.URLUtil
@@ -17,15 +16,18 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener {
 
+    enum class SORTING_MODE {
+        NAME_A, NAME_D, ACCESSIBILITY, RESPONSE_TIME_A, RESPONSE_TIME_D
+    }
 
-
+    private var mSortingMode : SORTING_MODE = SORTING_MODE.NAME_A
     private val mUrlItems: ArrayList<UrlItem> = ArrayList()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         addAnimals()
         initUrlInRecyclerView()
+        initViewClicks()
 
         btn_check.setOnClickListener {
             it.hideKeyboard()
@@ -37,6 +39,32 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
                 onNewUrlCreated(UrlItem(insertedUrl))
                 edt_url_adding.text?.clear();
             }
+        }
+    }
+
+    private fun initViewClicks() {
+        iv_sort_name_ascending.setOnClickListener {
+            mSortingMode = SORTING_MODE.NAME_A
+        }
+
+        iv_sort_name_descending.setOnClickListener {
+            mSortingMode = SORTING_MODE.NAME_D
+        }
+
+        iv_sort_accessibility.setOnClickListener {
+            mSortingMode = SORTING_MODE.ACCESSIBILITY
+        }
+
+        iv_sort_response_time_ascending.setOnClickListener {
+            mSortingMode = SORTING_MODE.RESPONSE_TIME_A
+        }
+
+        iv_sort_response_time_descending.setOnClickListener {
+            mSortingMode = SORTING_MODE.RESPONSE_TIME_D
+        }
+
+        tv_refresh.setOnClickListener {
+            //todo refresh
         }
     }
 
