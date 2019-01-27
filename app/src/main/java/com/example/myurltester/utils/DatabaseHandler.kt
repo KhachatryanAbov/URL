@@ -42,7 +42,7 @@ class DatabaseHandler(context: Context) :
         },
         RESPONSE_TIME_DESCENDING(){
             override fun createQuery() :String {
-                return "$ID DESC"
+                return "$RESPONSE_TIME DESC"
             }
         };
         abstract fun createQuery():String

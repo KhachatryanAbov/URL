@@ -22,9 +22,6 @@ class AccessibilityCheckingTask(
             if (!it.isChecked) {
                 try {
                     val httpURLConnection = URL(it.path).openConnection() as HttpURLConnection
-                    httpURLConnection.readTimeout = 3000
-                    httpURLConnection.connectTimeout = 3000//todo ??
-
                     val timeStart = System.currentTimeMillis()
                     httpURLConnection.connect()
                     it.responseTime = System.currentTimeMillis() - timeStart

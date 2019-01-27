@@ -2,7 +2,6 @@ package com.example.myurltester.adapters
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -39,9 +38,11 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val urlItem : UrlItem = urls.get(position);
         holder.urlPathTv?.text = urlItem.path
-        holder.accessibilityIndicator.visibility = if(urlItem.isChecked) View.VISIBLE else View.INVISIBLE
+        holder.accessibilityIv.visibility = if(urlItem.isChecked) View.VISIBLE else View.INVISIBLE
         holder.checkingPb.visibility = if(urlItem.isChecked) View.INVISIBLE else View.VISIBLE
-        holder.accessibilityIndicator?.background = ColorDrawable(if(urlItem.isAccessible) Color.GREEN else Color.RED)
+        holder.accessibilityIv.setColorFilter(if(urlItem.isAccessible) Color.GREEN else Color.RED, android.graphics.PorterDuff.Mode.MULTIPLY);
+        holder.responseTimeTv.text = urlItem.responseTime.toString()
+
         holder.deleteIv.setOnClickListener(View.OnClickListener {
             if(urlItem.isChecked) {
                 removeItem(urlItem)
@@ -75,8 +76,8 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
     }
 
     fun addItem(item :UrlItem){
-        urls.add(item)
-        itemsCopy.add(item)
+        urls.add(0,item)
+        itemsCopy.add(0,item)
         notifyDataSetChanged()
     }
 
@@ -93,7 +94,8 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
 
 class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val urlPathTv = view.tv_url_path
-    val accessibilityIndicator = view.v_url_accessibility
     val checkingPb = view.pb_url_checker
     val deleteIv = view.iv_delete
+    val responseTimeTv = view.tv_response_time
+    val accessibilityIv = view.iv_accessibility
 }
