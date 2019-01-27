@@ -14,25 +14,33 @@ import android.webkit.URLUtil
 import android.widget.Toast
 import com.example.myurltester.R
 import com.example.myurltester.adapters.UrlsAdapter
-import com.example.myurltester.ui.models.UrlItem
+import com.example.myurltester.models.UrlItem
+import com.example.myurltester.utils.AccessibilityCheckingTask
+import com.example.myurltester.utils.DatabaseHandler
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener, SearchView.OnQueryTextListener {
+//todo check for internet connection
 
-
-    enum class SORTING_MODE {
+    enum class SortingMode {
         NAME_A, NAME_D, ACCESSIBILITY, RESPONSE_TIME_A, RESPONSE_TIME_D
     }
 
-    private var mSortingMode : SORTING_MODE = SORTING_MODE.NAME_A
+    private var mDbHandler: DatabaseHandler? = null
+    private var mSortingMode : SortingMode = SortingMode.NAME_A
     private val mUrlItems: ArrayList<UrlItem> = ArrayList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        addAnimals()
-        initUrlInRecyclerView()
+        initParams()
+        initUrlRecyclerView()
         initViewClicks()
+    }
 
+    private fun initParams() {
+        mDbHandler = DatabaseHandler(this)
+        addAnimals()
 
     }
 
@@ -44,7 +52,7 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {//todo remove ?????????????
         if(item?.itemId == R.id.action_search){
 
         }
@@ -53,43 +61,44 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
     private fun initViewClicks() {
         iv_sort_name_ascending.setOnClickListener {
-            mSortingMode = SORTING_MODE.NAME_A
+            mSortingMode = SortingMode.NAME_A
         }
 
         iv_sort_name_descending.setOnClickListener {
-            mSortingMode = SORTING_MODE.NAME_D
+            mSortingMode = SortingMode.NAME_D
         }
 
         iv_sort_accessibility.setOnClickListener {
-            mSortingMode = SORTING_MODE.ACCESSIBILITY
+            mSortingMode = SortingMode.ACCESSIBILITY
         }
 
         iv_sort_response_time_ascending.setOnClickListener {
-            mSortingMode = SORTING_MODE.RESPONSE_TIME_A
+            mSortingMode = SortingMode.RESPONSE_TIME_A
         }
 
         iv_sort_response_time_descending.setOnClickListener {
-            mSortingMode = SORTING_MODE.RESPONSE_TIME_D
+            mSortingMode = SortingMode.RESPONSE_TIME_D
         }
 
         tv_refresh.setOnClickListener {
-            //todo refresh
+            AccessibilityCheckingTask(rv_url_list.adapter as UrlsAdapter, mUrlItems).execute()
         }
 
         btn_check.setOnClickListener {
             it.hideKeyboard()
             val insertedUrl : String = edt_url_adding.text.toString()
             if(insertedUrl != ""){
-                if(!URLUtil.isValidUrl(insertedUrl)){
+                if(URLUtil.isValidUrl(insertedUrl)){
+                    onNewUrlCreated(UrlItem(System.currentTimeMillis(), insertedUrl))
+                    edt_url_adding.text?.clear();
+                }else{
                     Toast.makeText(this@MainActivity, getString(R.string.invalid_URL), Toast.LENGTH_SHORT).show()
                 }
-                onNewUrlCreated(UrlItem(insertedUrl))
-                edt_url_adding.text?.clear();
             }
         }
     }
 
-    private fun initUrlInRecyclerView() {
+    private fun initUrlRecyclerView() {
         rv_url_list.layoutManager = LinearLayoutManager(this)
         rv_url_list.adapter = UrlsAdapter(mUrlItems, this)
         (rv_url_list.adapter as UrlsAdapter).onUrlItemInteractionListener = this
@@ -105,19 +114,13 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         (rv_url_list.adapter as UrlsAdapter).addItem(item)
     }
 
-
-
     private fun addNewUrlInDB(item: UrlItem) {
-   //     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mDbHandler?.addUrlItem(item)
     }
-
-
 
     private fun removeUrlFromDB(item: UrlItem) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mDbHandler?.deleteURL(item)
     }
-
-
 
     fun View.hideKeyboard() {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -125,20 +128,8 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     }
 
     fun addAnimals() {
-        mUrlItems.add(UrlItem("dog", true, false))
-        mUrlItems.add(UrlItem("dog", true, true))
-        mUrlItems.add(UrlItem("dog", false, false))
-        mUrlItems.add(UrlItem("dog", true, true))
-        mUrlItems.add(UrlItem("dog", false, false))
-        mUrlItems.add(UrlItem("dog", false, false))
-        mUrlItems.add(UrlItem("dog", true, true))
-        mUrlItems.add(UrlItem("dog", false, false))
-        mUrlItems.add(UrlItem("dog", false, true))
-        mUrlItems.add(UrlItem("dog", true, false))
-
-
+        mDbHandler?.getAllURLs()?.let { mUrlItems.addAll(it) }
     }
-
 
     override fun onUrlItemDeleted(urlItem: UrlItem) {
         removeUrlFromDB(urlItem)
@@ -153,8 +144,4 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         (rv_url_list.adapter as UrlsAdapter).filter(query);
         return true
     }
-
-
-
-
 }

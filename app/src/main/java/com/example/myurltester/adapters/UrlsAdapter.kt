@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.myurltester.R
-import com.example.myurltester.ui.models.UrlItem
+import com.example.myurltester.models.UrlItem
 import kotlinx.android.synthetic.main.rv_item_url.view.*
 
 class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
@@ -40,7 +40,7 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
         holder.urlPathTv?.text = urlItem.path
         holder.accessibilityIndicator.visibility = if(urlItem.isChecked) View.VISIBLE else View.INVISIBLE
         holder.checkingPb.visibility = if(urlItem.isChecked) View.INVISIBLE else View.VISIBLE
-        holder.accessibilityIndicator?.background = ColorDrawable(if(urlItem.isAccessible) Color.RED else Color.GREEN)
+        holder.accessibilityIndicator?.background = ColorDrawable(if(urlItem.isAccessible) Color.GREEN else Color.RED)
         holder.deleteIv.setOnClickListener(View.OnClickListener {
             removeItem(urlItem)
             onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
@@ -60,7 +60,7 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
                 urls.addAll(itemsCopy);
             } else{
                 itemsCopy.forEach {
-                    if(it.path.toLowerCase().contains(text.toLowerCase())){
+                    if(it.path?.toLowerCase()!!.contains(text.toLowerCase())){
                         urls.add(it);
                     }
                 }

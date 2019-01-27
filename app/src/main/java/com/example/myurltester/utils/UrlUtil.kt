@@ -18,9 +18,9 @@ class UrlUtil {
             if (netInfo.isConnected) {
                 try {
                     val urlConn : HttpURLConnection  = URL(url).openConnection() as (HttpURLConnection)
-                    urlConn.connectTimeout = 3000 //<- 3Seconds Timeout
+                    urlConn.connectTimeout = 3000//todo make final
                     urlConn.connect()
-                    return urlConn.responseCode == 200
+                    return urlConn.responseCode == 200 //todo make final
                     } catch (e1 : MalformedURLException) {
                     return false
                 } catch (e : IOException) {
@@ -28,6 +28,14 @@ class UrlUtil {
                 }
             }
             return false
+        }
+
+
+        fun isAccessibleUrl(url : String):Boolean {
+            val runtime = Runtime.getRuntime()
+            val proc = runtime.exec(url)
+            val mPingResult = proc.waitFor()
+            return mPingResult == 0
         }
     }
 }
