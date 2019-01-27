@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.SearchView
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.URLUtil
@@ -14,7 +17,8 @@ import com.example.myurltester.adapters.UrlsAdapter
 import com.example.myurltester.ui.models.UrlItem
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener {
+class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener, SearchView.OnQueryTextListener {
+
 
     enum class SORTING_MODE {
         NAME_A, NAME_D, ACCESSIBILITY, RESPONSE_TIME_A, RESPONSE_TIME_D
@@ -29,17 +33,22 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         initUrlInRecyclerView()
         initViewClicks()
 
-        btn_check.setOnClickListener {
-            it.hideKeyboard()
-            val insertedUrl : String = edt_url_adding.text.toString()
-            if(insertedUrl != ""){
-                if(!URLUtil.isValidUrl(insertedUrl)){
-                    Toast.makeText(this@MainActivity, getString(R.string.invalid_URL), Toast.LENGTH_SHORT).show()
-                }
-                onNewUrlCreated(UrlItem(insertedUrl))
-                edt_url_adding.text?.clear();
-            }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        val menuItem :MenuItem = menu.findItem(R.id.action_search)
+        val searchView : SearchView = menuItem.actionView as SearchView
+        searchView.setOnQueryTextListener(this)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if(item?.itemId == R.id.action_search){
+
         }
+        return true
     }
 
     private fun initViewClicks() {
@@ -66,6 +75,18 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         tv_refresh.setOnClickListener {
             //todo refresh
         }
+
+        btn_check.setOnClickListener {
+            it.hideKeyboard()
+            val insertedUrl : String = edt_url_adding.text.toString()
+            if(insertedUrl != ""){
+                if(!URLUtil.isValidUrl(insertedUrl)){
+                    Toast.makeText(this@MainActivity, getString(R.string.invalid_URL), Toast.LENGTH_SHORT).show()
+                }
+                onNewUrlCreated(UrlItem(insertedUrl))
+                edt_url_adding.text?.clear();
+            }
+        }
     }
 
     private fun initUrlInRecyclerView() {
@@ -81,14 +102,10 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     }
 
     private fun addNewUrlInRecyclerView(item: UrlItem) {
-        mUrlItems.add(item)
-        rv_url_list.adapter?.notifyItemInserted(mUrlItems.size - 1);
-        startChecking();
+        (rv_url_list.adapter as UrlsAdapter).addItem(item)
     }
 
-    private fun startChecking() {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+
 
     private fun addNewUrlInDB(item: UrlItem) {
    //     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -125,6 +142,16 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
     override fun onUrlItemDeleted(urlItem: UrlItem) {
         removeUrlFromDB(urlItem)
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        (rv_url_list.adapter as UrlsAdapter).filter(query);
+        return true
+    }
+
+    override fun onQueryTextChange(query: String?): Boolean {
+        (rv_url_list.adapter as UrlsAdapter).filter(query);
+        return true
     }
 
 

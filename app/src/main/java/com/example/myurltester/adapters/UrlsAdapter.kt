@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,12 @@ import kotlinx.android.synthetic.main.rv_item_url.view.*
 
 class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
+    private val itemsCopy : ArrayList<UrlItem> = ArrayList<UrlItem>()
     var onUrlItemInteractionListener : OnUrlItemInteractionListener? = null;
+
+    init {
+        itemsCopy.addAll(urls)
+    }
 
     override fun getItemCount(): Int {
         return urls.size
@@ -38,15 +42,42 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
         holder.checkingPb.visibility = if(urlItem.isChecked) View.INVISIBLE else View.VISIBLE
         holder.accessibilityIndicator?.background = ColorDrawable(if(urlItem.isAccessible) Color.RED else Color.GREEN)
         holder.deleteIv.setOnClickListener(View.OnClickListener {
-            removeItem(position)
+            removeItem(urlItem)
             onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
         })
     }
 
-    private fun removeItem(position: Int) {
-        urls.removeAt(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, urls.size);
+    private fun removeItem(urlItem : UrlItem) {
+        urls.remove(urlItem);
+        notifyDataSetChanged()
+        itemsCopy.remove(urlItem);
+    }
+
+    fun filter(text : String?){
+        urls.clear();
+        if (text != null) {
+            if(text.isEmpty()){
+                urls.addAll(itemsCopy);
+            } else{
+                itemsCopy.forEach {
+                    if(it.path.toLowerCase().contains(text.toLowerCase())){
+                        urls.add(it);
+                    }
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    fun addItem(item :UrlItem){
+        urls.add(item)
+        itemsCopy.add(item)
+        notifyDataSetChanged()
+        startChecking()
+    }
+
+    private fun startChecking() {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     interface OnUrlItemInteractionListener {
