@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.myurltester.R
 import com.example.myurltester.models.UrlItem
 import kotlinx.android.synthetic.main.rv_item_url.view.*
@@ -42,8 +43,12 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
         holder.checkingPb.visibility = if(urlItem.isChecked) View.INVISIBLE else View.VISIBLE
         holder.accessibilityIndicator?.background = ColorDrawable(if(urlItem.isAccessible) Color.GREEN else Color.RED)
         holder.deleteIv.setOnClickListener(View.OnClickListener {
-            removeItem(urlItem)
-            onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
+            if(urlItem.isChecked) {
+                removeItem(urlItem)
+                onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
+            }else{
+                Toast.makeText(context, context.getString(R.string.message_url_is_now_being_checked), Toast.LENGTH_SHORT).show()
+            }
         })
     }
 
@@ -85,8 +90,6 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
         fun onUrlItemDeleted(urlItem : UrlItem )
     }
 }
-
-
 
 class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val urlPathTv = view.tv_url_path

@@ -24,8 +24,8 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
 
     private var mDbHandler: DatabaseHandler? = null
-    private var mSortingMode : DatabaseHandler.SortingMode = DatabaseHandler.SortingMode.DATE
-    private val mUrlItems: ArrayList<UrlItem> = ArrayList()
+    private var mSortingMode : DatabaseHandler.SortingMode = DatabaseHandler.SortingMode.DEFAULT
+    private val mUrlItemsList: ArrayList<UrlItem> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
     private fun initParams() {
         mDbHandler = DatabaseHandler(this)
-        loadAllUrlsFromDB()
+        syncUrlItemsList()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -82,8 +82,10 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         }
 
         tv_refresh.setOnClickListener {
-            AccessibilityCheckingTask(rv_url_list.adapter as UrlsAdapter, mUrlItems).execute()
-            sortRecyclerView()
+            mDbHandler?.makeAllUrlItemsUnchecked()
+            syncUrlItemsList()
+            (rv_url_list.adapter as UrlsAdapter).refreshRv()
+            AccessibilityCheckingTask(rv_url_list.adapter as UrlsAdapter, mUrlItemsList, mDbHandler).execute()
         }
 
         btn_check.setOnClickListener {
@@ -101,14 +103,14 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     }
 
     private fun sortRecyclerView() {
-        mUrlItems.clear()
-        loadAllUrlsFromDB()
+        mUrlItemsList.clear()
+        syncUrlItemsList()
         (rv_url_list.adapter as UrlsAdapter).refreshRv()
     }
 
     private fun initUrlRecyclerView() {
         rv_url_list.layoutManager = LinearLayoutManager(this)
-        rv_url_list.adapter = UrlsAdapter(mUrlItems, this)
+        rv_url_list.adapter = UrlsAdapter(mUrlItemsList, this)
         (rv_url_list.adapter as UrlsAdapter).onUrlItemInteractionListener = this
         rv_url_list.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
     }
@@ -132,7 +134,7 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     }
 
     private fun removeUrlFromDB(item: UrlItem) {
-        mDbHandler?.deleteURL(item)
+        mDbHandler?.deleteUrlItem(item)
     }
 
     fun View.hideKeyboard() {
@@ -140,8 +142,9 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
 
-    private fun loadAllUrlsFromDB() {
-        mDbHandler?.getAllURLs(mSortingMode)?.let { mUrlItems.addAll(it) }
+    private fun syncUrlItemsList(){
+        mUrlItemsList.clear()
+        mDbHandler?.getAllUrlItems(mSortingMode)?.let { mUrlItemsList.addAll(it) }
     }
 
     override fun onUrlItemDeleted(urlItem: UrlItem) {

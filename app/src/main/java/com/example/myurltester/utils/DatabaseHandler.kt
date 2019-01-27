@@ -15,7 +15,7 @@ class DatabaseHandler(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSIOM) {
 
     enum class SortingMode {
-        DATE(){
+        DEFAULT(){
             override fun createQuery() :String {
                 return "$ID ASC"
             }
@@ -32,7 +32,7 @@ class DatabaseHandler(context: Context) :
         },
         ACCESSIBILITY(){
             override fun createQuery() :String {
-                return "${IS_ACCESSIBLE} ASC"
+                return "${IS_ACCESSIBLE} DESC"
             }
         },
         RESPONSE_TIME_ASCENDING(){
@@ -47,27 +47,6 @@ class DatabaseHandler(context: Context) :
         };
         abstract fun createQuery():String
     }
-
-    enum class Months(var shorthand: String) {
-        January("JAN"){
-            override fun printSomething() {
-                println("First month of the year.")
-            }
-        },
-        February("FEB"){
-            override fun printSomething() {
-                println("Second month of the year.")
-            }
-        },
-        March("MAR"){
-            override fun printSomething() {
-                println("Third month of the year.")
-            }
-        };
-        var a: String = "Hello, Kotlin Enums"
-        abstract fun printSomething()
-    }
-
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(
@@ -100,7 +79,7 @@ class DatabaseHandler(context: Context) :
     }
 
 
-    fun getAllURLs(sortingMode: SortingMode): ArrayList<UrlItem> {
+    fun getAllUrlItems(sortingMode: SortingMode): ArrayList<UrlItem> {
         val urlsList: ArrayList<UrlItem> = ArrayList()
         val db = readableDatabase
 
@@ -128,7 +107,27 @@ class DatabaseHandler(context: Context) :
         return urlsList
     }
 
-    fun deleteURL(urlItem: UrlItem) {
+    fun makeAllUrlItemsUnchecked(){
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(IS_CHECKED, 0)
+        db.update(TABLE_NAME, values, null, null);
+        db.close()
+    }
+
+    fun updateUrlItem(urlItem: UrlItem) {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(ID, urlItem.id)
+        values.put(PATH, urlItem.path)
+        values.put(RESPONSE_TIME, urlItem.responseTime)
+        values.put(IS_ACCESSIBLE, if (urlItem.isAccessible) 1 else 0)
+        values.put(IS_CHECKED, if (urlItem.isChecked) 1 else 0)
+        db.update(TABLE_NAME, values, "$ID = "+urlItem.id, null);
+        db.close();
+    }
+
+    fun deleteUrlItem(urlItem: UrlItem) {
         val db = writableDatabase
         db.delete(TABLE_NAME, "$ID = ?", arrayOf(urlItem.id.toString()))
         db.close();
