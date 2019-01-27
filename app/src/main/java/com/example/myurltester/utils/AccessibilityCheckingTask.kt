@@ -25,15 +25,15 @@ class AccessibilityCheckingTask(
                 val url = URL(path)
                 val httpURLConnection = url.openConnection() as HttpURLConnection
 
-                //httpURLConnection.readTimeout = 8000
-                //httpURLConnection.connectTimeout = 8000
+                httpURLConnection.readTimeout = 3000
+                httpURLConnection.connectTimeout = 3000
                 httpURLConnection.doOutput = true
                 httpURLConnection.connect()
 
                 val responseCode: Int = httpURLConnection.responseCode
 
                 it.responseTime = System.currentTimeMillis()-timeStart
-                it.isAccessible = responseCode == 200
+                it.isAccessible = responseCode == 200 //todo final
                 it.isChecked = true
                 publishProgress("s")
 

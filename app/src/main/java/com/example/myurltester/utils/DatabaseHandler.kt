@@ -6,12 +6,68 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.example.myurltester.models.UrlItem
+import com.example.myurltester.ui.main_activity.MainActivity
 
 /**
  * Created by Eyehunt Team on 07/06/18.
  */
 class DatabaseHandler(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSIOM) {
+
+    enum class SortingMode {
+        DATE(){
+            override fun createQuery() :String {
+                return "$ID ASC"
+            }
+        },
+        NAME_ASCENDING(){
+            override fun createQuery() :String {
+                return "$PATH ASC"
+            }
+        },
+        NAME_DESCENDING(){
+            override fun createQuery() :String {
+                return "$PATH DESC"
+            }
+        },
+        ACCESSIBILITY(){
+            override fun createQuery() :String {
+                return "${IS_ACCESSIBLE} ASC"
+            }
+        },
+        RESPONSE_TIME_ASCENDING(){
+            override fun createQuery() :String {
+                return "$RESPONSE_TIME ASC"
+            }
+        },
+        RESPONSE_TIME_DESCENDING(){
+            override fun createQuery() :String {
+                return "$ID DESC"
+            }
+        };
+        abstract fun createQuery():String
+    }
+
+    enum class Months(var shorthand: String) {
+        January("JAN"){
+            override fun printSomething() {
+                println("First month of the year.")
+            }
+        },
+        February("FEB"){
+            override fun printSomething() {
+                println("Second month of the year.")
+            }
+        },
+        March("MAR"){
+            override fun printSomething() {
+                println("Third month of the year.")
+            }
+        };
+        var a: String = "Hello, Kotlin Enums"
+        abstract fun printSomething()
+    }
+
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(
@@ -44,11 +100,17 @@ class DatabaseHandler(context: Context) :
     }
 
 
-    fun getAllURLs(): ArrayList<UrlItem> {
+    fun getAllURLs(sortingMode: SortingMode): ArrayList<UrlItem> {
         val urlsList: ArrayList<UrlItem> = ArrayList()
         val db = readableDatabase
-        val selectALLQuery = "SELECT * FROM $TABLE_NAME"
-        val cursor = db.rawQuery(selectALLQuery, null)
+
+        val cursor = db.query(TABLE_NAME,
+        null,
+        null,
+        null,
+        null, null,
+            sortingMode.createQuery());
+
         if (cursor.moveToFirst()) {
             do {
                 val urlItem = UrlItem()
@@ -68,7 +130,7 @@ class DatabaseHandler(context: Context) :
 
     fun deleteURL(urlItem: UrlItem) {
         val db = writableDatabase
-        db.delete(TABLE_NAME, ID + " = ?", arrayOf(urlItem.id.toString()))
+        db.delete(TABLE_NAME, "$ID = ?", arrayOf(urlItem.id.toString()))
         db.close();
     }
 

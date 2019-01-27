@@ -73,11 +73,12 @@ class UrlsAdapter(val urls: ArrayList<UrlItem>, val context: Context) : Recycler
         urls.add(item)
         itemsCopy.add(item)
         notifyDataSetChanged()
-        startChecking()
     }
 
-    private fun startChecking() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun refreshRv(){
+        itemsCopy.clear()
+        itemsCopy.addAll(urls)
+        notifyDataSetChanged()
     }
 
     interface OnUrlItemInteractionListener {

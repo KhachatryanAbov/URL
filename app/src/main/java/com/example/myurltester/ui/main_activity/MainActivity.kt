@@ -22,12 +22,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener, SearchView.OnQueryTextListener {
 //todo check for internet connection
 
-    enum class SortingMode {
-        NAME_A, NAME_D, ACCESSIBILITY, RESPONSE_TIME_A, RESPONSE_TIME_D
-    }
 
     private var mDbHandler: DatabaseHandler? = null
-    private var mSortingMode : SortingMode = SortingMode.NAME_A
+    private var mSortingMode : DatabaseHandler.SortingMode = DatabaseHandler.SortingMode.DATE
     private val mUrlItems: ArrayList<UrlItem> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,8 +37,7 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
     private fun initParams() {
         mDbHandler = DatabaseHandler(this)
-        addAnimals()
-
+        loadAllUrlsFromDB()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -61,27 +57,33 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
 
     private fun initViewClicks() {
         iv_sort_name_ascending.setOnClickListener {
-            mSortingMode = SortingMode.NAME_A
+            mSortingMode = DatabaseHandler.SortingMode.NAME_ASCENDING
+            sortRecyclerView()
         }
 
         iv_sort_name_descending.setOnClickListener {
-            mSortingMode = SortingMode.NAME_D
+            mSortingMode = DatabaseHandler.SortingMode.NAME_DESCENDING
+            sortRecyclerView()
         }
 
         iv_sort_accessibility.setOnClickListener {
-            mSortingMode = SortingMode.ACCESSIBILITY
+            mSortingMode = DatabaseHandler.SortingMode.ACCESSIBILITY
+            sortRecyclerView()
         }
 
         iv_sort_response_time_ascending.setOnClickListener {
-            mSortingMode = SortingMode.RESPONSE_TIME_A
+            mSortingMode = DatabaseHandler.SortingMode.RESPONSE_TIME_ASCENDING
+            sortRecyclerView()
         }
 
         iv_sort_response_time_descending.setOnClickListener {
-            mSortingMode = SortingMode.RESPONSE_TIME_D
+            mSortingMode = DatabaseHandler.SortingMode.RESPONSE_TIME_DESCENDING
+            sortRecyclerView()
         }
 
         tv_refresh.setOnClickListener {
             AccessibilityCheckingTask(rv_url_list.adapter as UrlsAdapter, mUrlItems).execute()
+            sortRecyclerView()
         }
 
         btn_check.setOnClickListener {
@@ -98,6 +100,12 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         }
     }
 
+    private fun sortRecyclerView() {
+        mUrlItems.clear()
+        loadAllUrlsFromDB()
+        (rv_url_list.adapter as UrlsAdapter).refreshRv()
+    }
+
     private fun initUrlRecyclerView() {
         rv_url_list.layoutManager = LinearLayoutManager(this)
         rv_url_list.adapter = UrlsAdapter(mUrlItems, this)
@@ -108,6 +116,11 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     private fun onNewUrlCreated(item: UrlItem) {
         addNewUrlInRecyclerView(item)
         addNewUrlInDB(item)
+        checkUrlAccessibility(item)
+    }
+
+    private fun checkUrlAccessibility(item: UrlItem) {
+
     }
 
     private fun addNewUrlInRecyclerView(item: UrlItem) {
@@ -127,8 +140,8 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
 
-    fun addAnimals() {
-        mDbHandler?.getAllURLs()?.let { mUrlItems.addAll(it) }
+    private fun loadAllUrlsFromDB() {
+        mDbHandler?.getAllURLs(mSortingMode)?.let { mUrlItems.addAll(it) }
     }
 
     override fun onUrlItemDeleted(urlItem: UrlItem) {
