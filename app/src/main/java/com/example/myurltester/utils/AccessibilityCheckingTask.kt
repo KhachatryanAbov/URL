@@ -22,6 +22,7 @@ class AccessibilityCheckingTask(
     override fun doInBackground(vararg values: Void?): Void? {
         listener?.getItems()?.forEach {
             if (!it.isChecked) {
+                //TODO add internet checking functionality
                 try {
                     val httpURLConnection = URL(it.path).openConnection() as HttpURLConnection
                     val timeStart = System.currentTimeMillis()
