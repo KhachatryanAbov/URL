@@ -101,14 +101,11 @@ class MainActivity : AppCompatActivity(),
         btn_check.setOnClickListener {
             it.hideKeyboard()
             val insertedUrl: String = edt_url_adding.text.toString()
-            if (insertedUrl != "") {
-                if (URLUtil.isValidUrl(insertedUrl)) {
-                    onNewUrlCreated(UrlItem(System.currentTimeMillis(), insertedUrl))
-                    edt_url_adding.text?.clear()
-                } else {
-                    Toast.makeText(this@MainActivity, getString(R.string.message_invalid_url), Toast.LENGTH_SHORT).show()
-
-                }
+            if (URLUtil.isValidUrl(insertedUrl)) {
+                onNewUrlCreated(UrlItem(System.currentTimeMillis(), insertedUrl))
+                edt_url_adding.text?.clear()
+            } else {
+                Toast.makeText(this@MainActivity, getString(R.string.message_invalid_url), Toast.LENGTH_SHORT).show()
             }
         }
     }
