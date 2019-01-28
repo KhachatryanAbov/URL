@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun syncUrlItemsList() {
         mUrlItemsList.clear()
-        mDbHandler?.getAllUrlItems(mSortingMode)?.let { mUrlItemsList.addAll(it) }
+        mDbHandler?.getAllSortedUrlItems(mSortingMode)?.let { mUrlItemsList.addAll(it) }
     }
 
     private fun checkAnUrlAccessibility() {
@@ -170,7 +170,14 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onUrlItemDeleted(urlItem: UrlItem) {
-        removeUrlFromDB(urlItem)
+        if(urlItem.isChecked) {
+            mUrlItemsList.remove(urlItem)
+            rv_url_list.adapter?.notifyDataSetChanged()
+            (rv_url_list.adapter as UrlsAdapter).removeItemFromCopyList(urlItem)
+            removeUrlFromDB(urlItem)
+        }else{
+            Toast.makeText(this, getString(R.string.message_url_is_now_being_checked), Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {

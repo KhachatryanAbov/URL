@@ -42,12 +42,7 @@ class UrlsAdapter(private val mUrlItems: ArrayList<UrlItem>, private val mContex
         holder.responseTimeTv.text = mContext.getString(R.string.response_time, urlItem.responseTime.toString())
 
         holder.deleteIv.setOnClickListener {
-            if(urlItem.isChecked) {
-                removeItem(urlItem)
-                onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
-            }else{
-                Toast.makeText(mContext, mContext.getString(R.string.message_url_is_now_being_checked), Toast.LENGTH_SHORT).show()
-            }
+            onUrlItemInteractionListener?.onUrlItemDeleted(urlItem)
         }
     }
 
@@ -55,9 +50,7 @@ class UrlsAdapter(private val mUrlItems: ArrayList<UrlItem>, private val mContex
         return mUrlItems.size
     }
 
-    private fun removeItem(urlItem : UrlItem) {
-        mUrlItems.remove(urlItem)
-        notifyDataSetChanged()
+    fun removeItemFromCopyList(urlItem : UrlItem) {
         itemsCopy.remove(urlItem)
     }
 

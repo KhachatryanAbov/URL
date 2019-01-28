@@ -10,10 +10,12 @@ class AccessibilityCheckingTask(
     private var mode: CheckMode = CheckMode.ALL
 ) : AsyncTask<Void, UrlItem, Void>() {
 
-    private val connectTimeout = 800
-
     enum class CheckMode {
         ALL, SINGLE,  CONTINUE_AFTER_FINISHING
+    }
+
+    companion object {
+        private const val  CONNECT_TIMEOUT = 800
     }
 
 
@@ -23,7 +25,7 @@ class AccessibilityCheckingTask(
                 try {
                     val httpURLConnection = URL(it.path).openConnection() as HttpURLConnection
                     val timeStart = System.currentTimeMillis()
-                    httpURLConnection.connectTimeout = connectTimeout
+                    httpURLConnection.connectTimeout = CONNECT_TIMEOUT
                     httpURLConnection.connect()
                     it.responseTime = System.currentTimeMillis() - timeStart
                     it.isAccessible = httpURLConnection.responseCode == HttpURLConnection.HTTP_OK

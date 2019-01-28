@@ -8,40 +8,15 @@ import android.database.sqlite.SQLiteOpenHelper
 import com.example.myurltester.models.UrlItem
 
 class DatabaseHandler(context: Context) :
-    SQLiteOpenHelper(context, DB_NAME, null, DB_VERSIOM) {
+    SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
-    enum class SortingMode {
-        DEFAULT(){
-            override fun createQuery() :String {
-                return "$ID ASC"
-            }
-        },
-        NAME_ASCENDING(){
-            override fun createQuery() :String {
-                return "$PATH ASC"
-            }
-        },
-        NAME_DESCENDING(){
-            override fun createQuery() :String {
-                return "$PATH DESC"
-            }
-        },
-        ACCESSIBILITY(){
-            override fun createQuery() :String {
-                return "$IS_ACCESSIBLE = 1"
-            }
-        },
-        RESPONSE_TIME_ASCENDING(){
-            override fun createQuery() :String {
-                return "$RESPONSE_TIME ASC"
-            }
-        },
-        RESPONSE_TIME_DESCENDING(){
-            override fun createQuery() :String {
-                return "$RESPONSE_TIME DESC"
-            }
-        };
-        abstract fun createQuery():String
+    enum class SortingMode (val query: String) {
+        DEFAULT("$ID ASC"),
+        NAME_ASCENDING("$PATH ASC"),
+        NAME_DESCENDING("$PATH DESC"),
+        ACCESSIBILITY("$IS_ACCESSIBLE = 1"),
+        RESPONSE_TIME_ASCENDING("$RESPONSE_TIME ASC"),
+        RESPONSE_TIME_DESCENDING("$RESPONSE_TIME DESC");
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -75,28 +50,25 @@ class DatabaseHandler(context: Context) :
     }
 
 
-    fun getAllUrlItems(sortingMode: SortingMode): ArrayList<UrlItem> {
-        val urlsList: ArrayList<UrlItem> = ArrayList()
+    fun getAllSortedUrlItems(sortingMode: SortingMode): ArrayList<UrlItem> {
         val db = readableDatabase
-        val cursor : Cursor?
-
-        if(sortingMode == SortingMode.ACCESSIBILITY){
-            cursor = db.query(TABLE_NAME,
+        val cursor : Cursor = if(sortingMode == SortingMode.ACCESSIBILITY){
+            db.query(TABLE_NAME,
                 null,
-                sortingMode.createQuery(),
+                sortingMode.query,
                 null,
                 null, null,
                 null)
         }else {
-            cursor = db.query(TABLE_NAME,
+            db.query(TABLE_NAME,
                 null,
                 null,
                 null,
                 null, null,
-                sortingMode.createQuery())
+                sortingMode.query)
         }
 
-
+        val urlsList: ArrayList<UrlItem> = ArrayList()
         if (cursor.moveToFirst()) {
             do {
                 val urlItem = UrlItem()
@@ -141,13 +113,13 @@ class DatabaseHandler(context: Context) :
     }
 
     companion object {
-        private val DB_NAME = "URLsDB"
-        private val DB_VERSIOM = 1
-        private val TABLE_NAME = "urls"
-        private val ID = "id"
-        private val PATH = "Path"
-        private val RESPONSE_TIME = "ResponseTime"
-        private val IS_ACCESSIBLE = "IsAccessible"
-        private val IS_CHECKED = "IsChecked"
+        private const val DB_NAME = "URLsDB"
+        private const val DB_VERSION = 1
+        private const val TABLE_NAME = "urls"
+        private const val ID = "id"
+        private const val PATH = "Path"
+        private const val RESPONSE_TIME = "ResponseTime"
+        private const val IS_ACCESSIBLE = "IsAccessible"
+        private const val IS_CHECKED = "IsChecked"
     }
 }
