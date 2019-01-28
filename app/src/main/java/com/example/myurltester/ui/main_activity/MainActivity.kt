@@ -1,6 +1,7 @@
 package com.example.myurltester.ui.main_activity
 
 import android.content.Context
+import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
@@ -19,13 +20,13 @@ import com.example.myurltester.utils.AccessibilityCheckingTask
 import com.example.myurltester.utils.DatabaseHandler
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener, SearchView.OnQueryTextListener {
-//todo check for internet connection
-
+class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListener, SearchView.OnQueryTextListener,
+    AccessibilityCheckingTask.OnAccessibilityCheckingListener {
 
     private var mDbHandler: DatabaseHandler? = null
-    private var mSortingMode : DatabaseHandler.SortingMode = DatabaseHandler.SortingMode.DEFAULT
+    private var mSortingMode: DatabaseHandler.SortingMode = DatabaseHandler.SortingMode.DEFAULT
     private val mUrlItemsList: ArrayList<UrlItem> = ArrayList()
+    private var urlCheckingTask: AccessibilityCheckingTask? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,21 +36,31 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         initViewClicks()
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (urlCheckingTask?.status != AsyncTask.Status.RUNNING) {
+            urlCheckingTask = AccessibilityCheckingTask(this, AccessibilityCheckingTask.CheckMode.ALL)
+            urlCheckingTask?.execute()
+        }
+    }
+
+
     private fun initParams() {
+        urlCheckingTask = AccessibilityCheckingTask(this)
         mDbHandler = DatabaseHandler(this)
         syncUrlItemsList()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        val menuItem :MenuItem = menu.findItem(R.id.action_search)
-        val searchView : SearchView = menuItem.actionView as SearchView
+        val menuItem: MenuItem = menu.findItem(R.id.action_search)
+        val searchView: SearchView = menuItem.actionView as SearchView
         searchView.setOnQueryTextListener(this)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {//todo remove ?????????????
-        if(item?.itemId == R.id.action_search){
+        if (item?.itemId == R.id.action_search) {
 
         }
         return true
@@ -82,28 +93,37 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         }
 
         tv_refresh.setOnClickListener {
-            mDbHandler?.makeAllUrlItemsUnchecked()
-            syncUrlItemsList()
-            (rv_url_list.adapter as UrlsAdapter).refreshRv()
-            AccessibilityCheckingTask(rv_url_list.adapter as UrlsAdapter, mUrlItemsList, mDbHandler).execute()
+            refreshList()
         }
 
         btn_check.setOnClickListener {
             it.hideKeyboard()
-            val insertedUrl : String = edt_url_adding.text.toString()
-            if(insertedUrl != ""){
-                if(URLUtil.isValidUrl(insertedUrl)){
+            val insertedUrl: String = edt_url_adding.text.toString()
+            if (insertedUrl != "") {
+                if (URLUtil.isValidUrl(insertedUrl)) {
                     onNewUrlCreated(UrlItem(System.currentTimeMillis(), insertedUrl))
-                    edt_url_adding.text?.clear();
-                }else{
+                    edt_url_adding.text?.clear()
+                } else {
                     Toast.makeText(this@MainActivity, getString(R.string.invalid_URL), Toast.LENGTH_SHORT).show()
+
                 }
             }
         }
     }
 
+    private fun refreshList() {
+        mDbHandler?.makeAllUrlItemsUnchecked()
+        syncUrlItemsList()
+        (rv_url_list.adapter as UrlsAdapter).refreshRv()
+
+        (urlCheckingTask?.status == AsyncTask.Status.RUNNING).run {
+            urlCheckingTask?.cancel(true)
+        }
+        urlCheckingTask = AccessibilityCheckingTask(this, AccessibilityCheckingTask.CheckMode.ALL)
+        urlCheckingTask?.execute()
+    }
+
     private fun sortRecyclerView() {
-        mUrlItemsList.clear()
         syncUrlItemsList()
         (rv_url_list.adapter as UrlsAdapter).refreshRv()
     }
@@ -118,12 +138,23 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     private fun onNewUrlCreated(item: UrlItem) {
         addNewUrlInRecyclerView(item)
         addNewUrlInDB(item)
-        checkUrlAccessibility(item)
+        checkAnUrlAccessibility()
     }
 
-    private fun checkUrlAccessibility(item: UrlItem) {
+    private fun checkAnUrlAccessibility() {
+            if (urlCheckingTask?.status == AsyncTask.Status.RUNNING) {
+                urlCheckingTask?.cancel(true)
+                urlCheckingTask =
+                    AccessibilityCheckingTask(this, AccessibilityCheckingTask.CheckMode.CONTINUE_AFTER_FINISHING)
+            } else {
+                urlCheckingTask = AccessibilityCheckingTask(this, AccessibilityCheckingTask.CheckMode.SINGLE)
+            }
+            urlCheckingTask?.execute()
 
     }
+
+
+
 
     private fun addNewUrlInRecyclerView(item: UrlItem) {
         (rv_url_list.adapter as UrlsAdapter).addItem(item)
@@ -142,7 +173,7 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
 
-    private fun syncUrlItemsList(){
+    private fun syncUrlItemsList() {
         mUrlItemsList.clear()
         mDbHandler?.getAllUrlItems(mSortingMode)?.let { mUrlItemsList.addAll(it) }
     }
@@ -152,12 +183,28 @@ class MainActivity : AppCompatActivity(), UrlsAdapter.OnUrlItemInteractionListen
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        (rv_url_list.adapter as UrlsAdapter).filter(query);
+        (rv_url_list.adapter as UrlsAdapter).filter(query)
         return true
     }
 
     override fun onQueryTextChange(query: String?): Boolean {
-        (rv_url_list.adapter as UrlsAdapter).filter(query);
+        (rv_url_list.adapter as UrlsAdapter).filter(query)
         return true
+    }
+
+    override fun onStepCompleted(item: UrlItem?) {
+        item?.let { mDbHandler?.updateUrlItem(it) }
+        rv_url_list.adapter?.notifyDataSetChanged()
+    }
+
+    override fun onTaskCompleted(mode: AccessibilityCheckingTask.CheckMode?) {
+        when (mode) {
+            AccessibilityCheckingTask.CheckMode.ALL -> sortRecyclerView()
+            AccessibilityCheckingTask.CheckMode.CONTINUE_AFTER_FINISHING -> refreshList()
+        }
+    }
+
+    override fun getItems(): ArrayList<UrlItem>? {
+        return mUrlItemsList
     }
 }

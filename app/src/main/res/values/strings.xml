@@ -6,6 +6,7 @@
     <string name="refresh">Refresh</string>
     <string name="invalid_URL">inserted URL is invalid</string>
     <string name="message_url_is_now_being_checked">URL is now being checked</string>
+    <string name="message_check_connection">Please Check Your Internet Connection</string>
     <string name="name_ascending">name ascending</string>
     <string name="name_descending">name descending</string>
     <string name="accessibility">accessibility</string>

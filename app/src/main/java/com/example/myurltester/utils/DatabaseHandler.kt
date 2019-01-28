@@ -2,6 +2,7 @@ package com.example.myurltester.utils
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
@@ -32,7 +33,7 @@ class DatabaseHandler(context: Context) :
         },
         ACCESSIBILITY(){
             override fun createQuery() :String {
-                return "${IS_ACCESSIBLE} DESC"
+                return "$IS_ACCESSIBLE = 1"
             }
         },
         RESPONSE_TIME_ASCENDING(){
@@ -82,13 +83,24 @@ class DatabaseHandler(context: Context) :
     fun getAllUrlItems(sortingMode: SortingMode): ArrayList<UrlItem> {
         val urlsList: ArrayList<UrlItem> = ArrayList()
         val db = readableDatabase
+        val cursor : Cursor?
 
-        val cursor = db.query(TABLE_NAME,
-        null,
-        null,
-        null,
-        null, null,
-            sortingMode.createQuery());
+        if(sortingMode == SortingMode.ACCESSIBILITY){
+            cursor = db.query(TABLE_NAME,
+                null,
+                sortingMode.createQuery(),
+                null,
+                null, null,
+                null);
+        }else {
+            cursor = db.query(TABLE_NAME,
+                null,
+                null,
+                null,
+                null, null,
+                sortingMode.createQuery());
+        }
+
 
         if (cursor.moveToFirst()) {
             do {
