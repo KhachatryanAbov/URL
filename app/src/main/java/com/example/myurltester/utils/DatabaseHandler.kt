@@ -5,13 +5,8 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
 import com.example.myurltester.models.UrlItem
-import com.example.myurltester.ui.main_activity.MainActivity
 
-/**
- * Created by Eyehunt Team on 07/06/18.
- */
 class DatabaseHandler(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSIOM) {
 
@@ -91,14 +86,14 @@ class DatabaseHandler(context: Context) :
                 sortingMode.createQuery(),
                 null,
                 null, null,
-                null);
+                null)
         }else {
             cursor = db.query(TABLE_NAME,
                 null,
                 null,
                 null,
                 null, null,
-                sortingMode.createQuery());
+                sortingMode.createQuery())
         }
 
 
@@ -123,7 +118,7 @@ class DatabaseHandler(context: Context) :
         val db = writableDatabase
         val values = ContentValues()
         values.put(IS_CHECKED, 0)
-        db.update(TABLE_NAME, values, null, null);
+        db.update(TABLE_NAME, values, null, null)
         db.close()
     }
 
@@ -135,19 +130,19 @@ class DatabaseHandler(context: Context) :
         values.put(RESPONSE_TIME, urlItem.responseTime)
         values.put(IS_ACCESSIBLE, if (urlItem.isAccessible) 1 else 0)
         values.put(IS_CHECKED, if (urlItem.isChecked) 1 else 0)
-        db.update(TABLE_NAME, values, "$ID = "+urlItem.id, null);
-        db.close();
+        db.update(TABLE_NAME, values, "$ID = "+urlItem.id, null)
+        db.close()
     }
 
     fun deleteUrlItem(urlItem: UrlItem) {
         val db = writableDatabase
         db.delete(TABLE_NAME, "$ID = ?", arrayOf(urlItem.id.toString()))
-        db.close();
+        db.close()
     }
 
     companion object {
         private val DB_NAME = "URLsDB"
-        private val DB_VERSIOM = 1;
+        private val DB_VERSIOM = 1
         private val TABLE_NAME = "urls"
         private val ID = "id"
         private val PATH = "Path"
